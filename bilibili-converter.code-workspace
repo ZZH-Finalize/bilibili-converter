@@ -1,0 +1,115 @@
+{
+    "folders": [
+        {
+            "path": ".",
+        }
+    ],
+    "settings": {
+        "files.encoding": "utf8",
+        "json.schemas": [
+            {
+                "fileMatch": [
+                    "classifiers/*.json"
+                ],
+                "url": "./classifiers_schema.json"
+            },
+            {
+                "fileMatch": [
+                    "private/classifiers/*.json"
+                ],
+                "url": "./classifiers_schema.json"
+            },
+        ]
+    },
+    "tasks": {
+        "version": "2.0.0",
+        "tasks": [
+            {
+                "label": "test",
+                "command": "python",
+                "type": "shell",
+                "args": [
+                    "main.py",
+                    "ref",
+                    "-v",
+                    "DEBUG",
+                    "-d",
+                ],
+                "presentation": {
+                    "echo": true,
+                    "reveal": "always",
+                    "focus": false,
+                    "panel": "dedicated",
+                    "showReuseMessage": false,
+                    "clear": true
+                },
+                "problemMatcher": [],
+                "group": {
+                    "kind": "test",
+                    "isDefault": true
+                }
+            },
+            {
+                "label": "run",
+                "command": "python",
+                "type": "shell",
+                "args": [
+                    "main.py",
+                    "ref",
+                    "-v",
+                    "INFO",
+                    // "-d",
+                ],
+                "presentation": {
+                    "echo": true,
+                    "reveal": "always",
+                    "focus": false,
+                    "panel": "dedicated",
+                    "showReuseMessage": false,
+                    "clear": true
+                },
+                "problemMatcher": [],
+                "group": {
+                    "kind": "build",
+                    "isDefault": true
+                }
+            },
+        ]
+    },
+    "launch": {
+        "version": "0.2.0",
+        "configurations": [
+            {
+                "name": "main",
+                "request": "launch",
+                "type": "debugpy",
+                "justMyCode": true,
+                "program": "main.py",
+                "args": [
+                    "ref",
+                    "-v",
+                    "INFO",
+                ],
+                "clientOS": "windows",
+                "autoStartBrowser": false,
+                "autoReload": {
+                    "enable": false
+                }
+            },
+            {
+                "name": "classifier",
+                "request": "launch",
+                "type": "debugpy",
+                "justMyCode": true,
+                "program": "classifiers.py",
+                "args": [],
+                "clientOS": "windows",
+                "autoStartBrowser": false,
+                "autoReload": {
+                    "enable": false
+                }
+            },
+        ],
+        "compounds": []
+    }
+}

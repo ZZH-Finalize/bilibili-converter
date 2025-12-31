@@ -1,0 +1,77 @@
+{
+    "$schema": "https://json-schema.org/draft-07/schema#",
+    "title": "ContentClassifier",
+    "type": "object",
+    "description": "Content classifier root node",
+    "additionalProperties": false,
+    "patternProperties": {
+        "^.*$": {
+            "$ref": "#/$defs/ContentClassifier"
+        }
+    },
+    "$defs": {
+        "MatchKeywords": {
+            "properties": {
+                "common": {
+                    "description": "Used for all field match",
+                    "items": {
+                        "format": "regex",
+                        "type": "string"
+                    },
+                    "title": "Common",
+                    "type": "array"
+                },
+                "title": {
+                    "description": "Used for title match",
+                    "items": {
+                        "format": "regex",
+                        "type": "string"
+                    },
+                    "title": "Title",
+                    "type": "array"
+                },
+                "up": {
+                    "description": "Used for up match",
+                    "items": {
+                        "format": "regex",
+                        "type": "string"
+                    },
+                    "title": "Up",
+                    "type": "array"
+                }
+            },
+            "title": "MatchKeywords",
+            "type": "object"
+        },
+        "ContentClassifier": {
+            "required": [
+                "output_dir",
+                "regexp"
+            ],
+            "properties": {
+                "output_dir": {
+                    "description": "Which dir should be selected when matched with this classifier",
+                    "format": "path",
+                    "title": "Output Dir",
+                    "type": "string"
+                },
+                "regexp": {
+                    "$ref": "#/$defs/MatchKeywords",
+                    "description": "Regex used for match"
+                },
+                "priority": {
+                    "default": 9,
+                    "description": "Classifier priority",
+                    "title": "Priority",
+                    "type": "integer"
+                },
+                "with_upinfo": {
+                    "default": false,
+                    "description": "Controls the final output dir",
+                    "title": "With Upinfo",
+                    "type": "boolean"
+                }
+            }
+        }
+    }
+}

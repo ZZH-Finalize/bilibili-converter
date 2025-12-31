@@ -1,0 +1,41 @@
+{
+    "鬼畜": {
+        "output_dir": "鬼畜",
+        "priority": 0,
+        "with_upinfo": false,
+        "regexp": {
+            "common": [],
+            "title": [
+                "鬼畜"
+            ],
+            "up": [
+                "王思妇"
+            ]
+        }
+    },
+    "搞笑": {
+        "output_dir": "gaoxiao",
+        "priority": 0,
+        "regexp": {
+            "common": [],
+            "up": [],
+            "title": [
+                "搞笑"
+            ]
+        }
+    },
+    "舞蹈": {
+        "output_dir": "舞蹈",
+        "priority": 1,
+        "with_upinfo": true,
+        "regexp": {
+            "common": [
+                "舞蹈"
+            ],
+            "title": [
+                "韩舞"
+            ],
+            "up": []
+        }
+    }
+}
