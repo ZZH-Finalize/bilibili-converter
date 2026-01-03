@@ -3,11 +3,14 @@ import asyncio
 import json
 import logging
 import aiohttp
+import util
 
-from vidinfo import vidinfo
-from cache import cache
+from vidinfo import Vidinfo
+from cache import cache, CACHE_DIR
+from mediatypes import handlers
 
 ref_path: list[str] = []
+output_path: str = ''
 debug = False
 cmdq = asyncio.Queue()
 script_path = os.path.dirname(sys.argv[0])
@@ -16,13 +19,16 @@ logger = logging.getLogger('bili-conv')
 uid_cache = cache('cache/uid.json', logger)
 
 ENTRY_FILE = 'entry.json'
-ACCEPT_EXTS = ['m4s','flv']
+MEDIA_TYPE_MAPPING = [None, ]
+
+MKDIRS = [CACHE_DIR]
 
 def parse_arg():
-    global ref_path, debug
+    global ref_path, output_path, debug
     from argparse import ArgumentParser
     parser = ArgumentParser('bili-conv', description='convert bilibili videos')
     parser.add_argument('ref_path', help='input video paths', nargs='+', type=str)
+    parser.add_argument('-o', '--output', dest='output', help='output video path', type=str, default='output')
     parser.add_argument('-v', '--verbose', help='verbose level', dest='verbose', type=str, choices=logging._nameToLevel.keys(), default='INFO')
     parser.add_argument('-d', '--debug-mode', help='debug mode (print command only)', dest='debug', action='store_true')
 
@@ -30,6 +36,7 @@ def parse_arg():
     logger.setLevel(args.verbose)
     ref_path.extend(args.ref_path)
     debug = args.debug
+    output_path = args.output
 
 async def request_info(aid: int):
     logger.info(f'request for {aid}')
@@ -39,20 +46,27 @@ async def request_info(aid: int):
             logger.debug(f'get resp: {json}')
             return json
 
-async def execute(cmd: str, *args):
-    await cmdq.put((cmd, args))
+async def execute(cmd: str):
+    await cmdq.put(cmd)
 
 async def execute_task():
     while True:
-        cmd, args = await cmdq.get()
+        cmd_str: str = await cmdq.get()
+        cmd_part = cmd_str.split(' ')
+        cmd = cmd_part[0]
+        args = cmd_part[1:]
+
         if cmd == 'exit':
             break
+        elif cmd == 'skip':
+            continue
+
         if debug is True:
             print(f'exec: {cmd}')
         else:
-            await asyncio.to_thread(os.execv, cmd, args)
+            await asyncio.to_thread(os.execvp, cmd, args)
 
-async def parse_entry(entry_fn: str) -> vidinfo:
+async def parse_entry(entry_fn: str) -> Vidinfo:
     json_data = json.load(open(entry_fn, encoding='utf-8'))
     media_type = json_data['media_type']
     title = json_data['title']
@@ -76,25 +90,35 @@ async def parse_entry(entry_fn: str) -> vidinfo:
         else:
             owner = 'unknow_owner'
         uid_cache.update(owner_id, owner)
+    # 从缓存里获取到了owner
+    else:
+        logger.info(f'fetch owner({owner}) from cache')
 
-    return vidinfo(type=media_type, title=title, owner=owner, output_path='')
+    return Vidinfo(type=media_type, title=title, owner=owner, output_path='')
 
 async def scan_path(path: str):
     for entry in os.listdir(path):
         entry_path = os.path.join(path, entry)
+        data_path = list(filter(os.path.isdir, util.listdir(entry_path)))[0]
         logger.debug(f'entry_path: {entry_path}')
+        logger.debug(f'data_path: {data_path}')
 
-        await parse_entry(os.path.join(entry_path, ENTRY_FILE))
-
-    # for dirs in os.listdir(path):
-        
-    #     for a, b, c in os.walk(dirs):
-    #         await execute(f'a: {a}, b: {b}, c: {c}')
+        vidinfo = await parse_entry(os.path.join(entry_path, ENTRY_FILE))
+        cmd = handlers[vidinfo.type].gen_cmd(data_path)
+        logger.info(cmd)
 
     await execute('exit')
 
 async def main():
     parse_arg()
+
+    uid_cache.load()
+
+    MKDIRS.append(output_path)
+
+    for dir in MKDIRS:
+        if not os.path.exists(dir):
+            os.mkdir(dir)
 
     logger.addHandler(logging.StreamHandler(sys.stdout))
 

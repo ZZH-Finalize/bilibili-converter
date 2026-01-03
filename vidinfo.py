@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
-class vidinfo(BaseModel):
+class Vidinfo(BaseModel):
     type: int
     title: str
     owner: str

@@ -1,6 +1,8 @@
 import json
 from logging import Logger
 
+CACHE_DIR = 'cache'
+
 class cache:
     def __init__(self, fn: str, logger: Logger) -> None:
         self.fn = fn
